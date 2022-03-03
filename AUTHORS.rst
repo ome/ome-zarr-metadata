@@ -2,4 +2,4 @@
 Contributors
 ============
 
-* jmoore <josh@glencoesoftware.com>
+* Josh Moore <j.a.moore@dundee.ac.uk>

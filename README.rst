@@ -37,7 +37,9 @@ ome-zarr-metadata
     ome_zarr extension for parsing OME-XML metadata
 
 
-A longer description of your project goes here...
+This repository contains ome_zarr reader specifications which
+are discovered via `entrypoints`. Each specification is given
+a chance to parse an OME-Zarr when opened.
 
 
 .. _pyscaffold-notes:
