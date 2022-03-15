@@ -32,6 +32,10 @@ class bioformats2raw(Base):
         super().__init__(node)
         try:
             data = self.handle(node)
+            for idx, image in enumerate(data.images):
+                series = node.zarr.create(str(idx))
+                assert series.exists()
+                _logger.info(f"found {series}")
             if False:
                 node.metadata["ome-xml"] = data
         except Exception as e:
