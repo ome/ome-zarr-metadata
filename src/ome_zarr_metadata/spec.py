@@ -32,11 +32,14 @@ class bioformats2raw(Base):
         super().__init__(node)
         try:
             data = self.handle(node)
-            for idx, image in enumerate(data.images):
-                series = node.zarr.create(str(idx))
-                assert series.exists()
-                _logger.info(f"found {series}")
-                node.add(series)
+            if data.plates:
+                _logger.info("Plates detected. Skipping implicit loading")
+            else:
+                for idx, image in enumerate(data.images):
+                    series = node.zarr.create(str(idx))
+                    assert series.exists(), f"{series} is missing"
+                    _logger.info(f"found {series}")
+                    node.add(series)
             node.metadata["ome-xml"] = data
         except Exception as e:
             _logger.error(f"failed to parse metadata: {e}")
@@ -45,8 +48,32 @@ class bioformats2raw(Base):
         """
         Note: elem.insert() was not updating the object correctly.
         """
+
         if elem.tag == f"{ns}Pixels":
-            elem.append(ET.Element(f"{ns}MetadataOnly"))
+
+            must_have = set([f"{ns}BinData", f"{ns}TiffData", f"{ns}MetadataOnly"])
+            children = set([x.tag for x in elem])
+
+            if not any(x in children for x in must_have):
+                # Needs fixing
+                metadata_only = ET.Element(f"{ns}MetadataOnly")
+
+                inserted = False
+                for idx, child in enumerate(elem):
+                    if child.tag == f"{ns}Channel":
+                        elem.insert(idx + 1, metadata_only)
+                        inserted = True
+
+                if not inserted:
+                    # Append to the beginning
+                    elem.insert(0, metadata_only)
+
+        elif elem.tag == f"{ns}Plane":
+            remove = None
+            for idx, child in enumerate(elem):
+                if child.tag == f"{ns}HashSHA1":
+                    remove = child
+            elem.remove(remove)
 
     def parse_xml(self, filename):
         # Parse the file and find the current schema
