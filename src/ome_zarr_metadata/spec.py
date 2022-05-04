@@ -58,15 +58,11 @@ class bioformats2raw(Base):
                 # Needs fixing
                 metadata_only = ET.Element(f"{ns}MetadataOnly")
 
-                inserted = False
+                last_channel = -1
                 for idx, child in enumerate(elem):
                     if child.tag == f"{ns}Channel":
-                        elem.insert(idx + 1, metadata_only)
-                        inserted = True
-
-                if not inserted:
-                    # Append to the beginning
-                    elem.insert(0, metadata_only)
+                        last_channel = idx
+                elem.insert(last_channel + 1, metadata_only)
 
         elif elem.tag == f"{ns}Plane":
             remove = None
