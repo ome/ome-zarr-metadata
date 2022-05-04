@@ -39,7 +39,9 @@ class bioformats2raw(Base):
                     series = node.zarr.create(str(idx))
                     assert series.exists(), f"{series} is missing"
                     _logger.info(f"found {series}")
-                    node.add(series)
+                    subnode = node.add(series)
+                    subnode.metadata["ome-xml:index"] = idx
+                    subnode.metadata["ome-xml:image"] = image
             node.metadata["ome-xml"] = data
         except Exception as e:
             _logger.error(f"failed to parse metadata: {e}")
